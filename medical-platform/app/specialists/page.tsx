@@ -4,13 +4,49 @@ import type React from 'react'
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Search, Hospital, MapPin, Phone, Mail, Loader2 } from "lucide-react"
+import { Search, Hospital, MapPin, Phone, Mail, Loader2, ChevronDown, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { BottomDesign } from "@/components/bottom-design"
-import { de } from 'date-fns/locale'
+
+// Country data
+const countries = [
+  "All Countries",
+  "United States",
+  "Canada", 
+  "United Kingdom",
+  "Germany",
+  "France",
+  "Australia",
+  "Japan",
+  "Brazil",
+  "Mexico",
+  "India",
+  "China",
+  "South Korea",
+  "Italy",
+  "Spain",
+  "Netherlands",
+  "Sweden",
+  "Switzerland"
+]
+
+// US States data
+const usStates = [
+  "All States",
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+  "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+  "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+  "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
+  "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada",
+  "New Hampshire", "New Jersey", "New Mexico", "New York",
+  "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon",
+  "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota",
+  "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington",
+  "West Virginia", "Wisconsin", "Wyoming"
+]
 
 // Interface for specialist data from backend
 interface Specialist {
@@ -47,11 +83,11 @@ const fallbackSpecialists: Specialist[] = [
     name: "Anne-Catherine Bachoud-Levi",
     first_name: "Anne-Catherine",
     last_name: "Bachoud-Levi",
-    hospital: "Assistance Publique - Hôpitaux de Paris",
+    hospital: "Assistance Publique - HÃ´pitaux de Paris",
     specialty: "Huntington's Disease",
     research_interests: "Neurodegenerative diseases, clinical trials",
     location: {
-      city: "Créteil",
+      city: "CrÃ©teil",
       state: "",
       country: "France"
     },
@@ -96,8 +132,8 @@ const fallbackSpecialists: Specialist[] = [
   },
   {
     id: "3",
-    name: "André M Cantin",
-    first_name: "André",
+    name: "AndrÃ© M Cantin",
+    first_name: "AndrÃ©",
     last_name: "Cantin",
     hospital: "Centre de recherche du Centre hospitalier universitaire de Sherbrooke",
     specialty: "Cystic Fibrosis",
@@ -128,14 +164,118 @@ export default function SearchResultsPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [hasSearched, setHasSearched] = useState(false);
+    
+    // Location filter states
+    const [selectedCountry, setSelectedCountry] = useState("All Countries")
+    const [selectedState, setSelectedState] = useState("All States")
+    const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false)
+    const [locationSearchTerm, setLocationSearchTerm] = useState("")
+    const [activeLocationTab, setActiveLocationTab] = useState<'country' | 'state'>('country')
+    
     const router = useRouter();
     const searchParams = useSearchParams();
 
-    // Get initial query from URL
+    // Filter countries based on search term
+    const filteredCountries = countries.filter(country =>
+      country.toLowerCase().includes(locationSearchTerm.toLowerCase())
+    )
+
+    // Filter states based on search term
+    const filteredStates = usStates.filter(state =>
+      state.toLowerCase().includes(locationSearchTerm.toLowerCase())
+    )
+
+    // Get display text for location filter
+    const getLocationDisplayText = () => {
+      if (selectedCountry === "All Countries") {
+        return "All Locations"
+      }
+      if (selectedCountry === "United States" && selectedState !== "All States") {
+        return `${selectedState}, US`
+      }
+      return selectedCountry
+    }
+
+    const handleCountrySelect = (country: string) => {
+      setSelectedCountry(country)
+      setLocationSearchTerm("")
+      
+      // Reset state selection if country changes
+      if (country !== "United States") {
+        setSelectedState("All States")
+        setIsLocationDropdownOpen(false)
+      } else {
+        // Switch to state tab if US is selected
+        setActiveLocationTab('state')
+      }
+      
+      // Don't auto-search - let user click search button
+    }
+
+    const handleStateSelect = (state: string) => {
+      setSelectedState(state)
+      setIsLocationDropdownOpen(false)
+      setLocationSearchTerm("")
+      
+      // Don't auto-search - let user click search button
+    }
+
+    const clearLocationFilter = () => {
+      setSelectedCountry("All Countries")
+      setSelectedState("All States")
+      
+      // Don't auto-search - let user click search button
+    }
+
+    const buildApiUrl = (searchQuery: string) => {
+      const params = new URLSearchParams()
+      params.set('q', searchQuery)
+      
+      if (selectedCountry !== "All Countries") {
+        params.set('country', selectedCountry)
+      }
+      
+      if (selectedCountry === "United States" && selectedState !== "All States") {
+        params.set('state', selectedState)
+      }
+      
+      return `http://localhost:8000/api/specialists/search?${params.toString()}`
+    }
+
+    const buildSearchUrl = (searchQuery: string) => {
+      const params = new URLSearchParams()
+      params.set('q', searchQuery)
+      
+      if (selectedCountry !== "All Countries") {
+        params.set('country', selectedCountry)
+      }
+      
+      if (selectedCountry === "United States" && selectedState !== "All States") {
+        params.set('state', selectedState)
+      }
+      
+      return `/specialists?${params.toString()}`
+    }
+
+    // Get initial query and location from URL
     useEffect(() => {
       const urlQuery = searchParams.get('q');
+      const urlCountry = searchParams.get('country');
+      const urlState = searchParams.get('state');
+      
       if (urlQuery) {
         setQuery(urlQuery);
+      }
+      
+      if (urlCountry) {
+        setSelectedCountry(urlCountry);
+      }
+      
+      if (urlState) {
+        setSelectedState(urlState);
+      }
+      
+      if (urlQuery) {
         performSearch(urlQuery);
       }
     }, [searchParams]);
@@ -148,7 +288,7 @@ export default function SearchResultsPage() {
       setHasSearched(true);
       
       try {
-        const response = await fetch(`http://localhost:8000/api/specialists/search?q=${encodeURIComponent(searchQuery)}`);
+        const response = await fetch(buildApiUrl(searchQuery));
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -175,8 +315,8 @@ export default function SearchResultsPage() {
       e.preventDefault();
       const trimmedQuery = query.trim();
       if (trimmedQuery) {
-        // Update URL
-        router.push(`/specialists?q=${encodeURIComponent(trimmedQuery)}`);
+        // Update URL with location filters
+        router.push(buildSearchUrl(trimmedQuery));
         performSearch(trimmedQuery);
       }
     };
@@ -198,23 +338,135 @@ export default function SearchResultsPage() {
         <div className="max-w-4xl mx-auto">
           <h1 className="text-3xl font-bold text-foreground mb-6 text-balance">Find Medical Specialists</h1>
 
+          {/* Enhanced Search Bar with Location Filter */}
           <form onSubmit={handleSearch} className="relative mb-4">
-            <div className="relative flex items-center">
-              <Search className="absolute left-4 h-5 w-5 text-muted-foreground" />
+            <div className="relative flex items-center bg-card border-2 border-border rounded-lg focus-within:border-primary transition-colors">
+              <Search className="absolute left-4 h-5 w-5 text-muted-foreground z-10" />
+              
+              {/* Main search input */}
               <Input
                 type="text"
                 placeholder="Search by condition..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="pl-12 pr-24 h-12 text-base bg-card border-2 border-border focus:border-primary transition-colors"
+                className="pl-12 pr-4 h-12 text-base bg-transparent border-0 focus:ring-0 flex-1"
               />
+              
+              {/* Location filter button integrated in search bar */}
+              <div className="flex items-center border-l border-border px-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsLocationDropdownOpen(!isLocationDropdownOpen)
+                    setActiveLocationTab('country')
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary transition-colors"
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span className="hidden sm:inline">{getLocationDisplayText()}</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isLocationDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+                
+                {/* Clear location filter */}
+                {selectedCountry !== "All Countries" && (
+                  <button
+                    type="button"
+                    onClick={clearLocationFilter}
+                    className="ml-1 p-1 text-muted-foreground hover:text-primary transition-colors"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+
+              {/* Search button */}
               <Button
                 type="submit"
-                className="absolute right-2 h-8 px-4 bg-primary hover:bg-primary/90 text-primary-foreground"
+                disabled={loading}
+                className="ml-2 mr-2 h-8 px-4 bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
               >
-                Search
+                {loading ? "Searching..." : "Search"}
               </Button>
             </div>
+
+            {/* Location dropdown */}
+            {isLocationDropdownOpen && (
+              <div className="absolute top-full left-0 right-0 mt-1 bg-card border-2 border-border rounded-lg shadow-lg z-50 max-h-80 overflow-hidden">
+                {/* Tab headers */}
+                <div className="flex border-b border-border">
+                  <button
+                    type="button"
+                    onClick={() => setActiveLocationTab('country')}
+                    className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                      activeLocationTab === 'country' 
+                        ? 'bg-primary/10 text-primary border-b-2 border-primary' 
+                        : 'text-muted-foreground hover:text-primary'
+                    }`}
+                  >
+                    Country
+                  </button>
+                  {selectedCountry === "United States" && (
+                    <button
+                      type="button"
+                      onClick={() => setActiveLocationTab('state')}
+                      className={`flex-1 px-4 py-3 text-sm font-medium transition-colors ${
+                        activeLocationTab === 'state' 
+                          ? 'bg-primary/10 text-primary border-b-2 border-primary' 
+                          : 'text-muted-foreground hover:text-primary'
+                      }`}
+                    >
+                      State
+                    </button>
+                  )}
+                </div>
+
+                {/* Search input */}
+                <div className="p-3 border-b border-border">
+                  <Input
+                    type="text"
+                    placeholder={`Search ${activeLocationTab === 'country' ? 'countries' : 'states'}...`}
+                    value={locationSearchTerm}
+                    onChange={(e) => setLocationSearchTerm(e.target.value)}
+                    className="h-8 text-sm"
+                  />
+                </div>
+
+                {/* Options list */}
+                <div className="max-h-48 overflow-y-auto">
+                  {activeLocationTab === 'country' ? (
+                    <>
+                      {filteredCountries.map((country) => (
+                        <button
+                          key={country}
+                          type="button"
+                          onClick={() => handleCountrySelect(country)}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-muted focus:bg-muted focus:outline-none transition-colors ${
+                            selectedCountry === country ? 'bg-primary/10 text-primary font-medium' : ''
+                          }`}
+                        >
+                          {country}
+                        </button>
+                      ))}
+                    </>
+                  ) : (
+                    <>
+                      {filteredStates.map((state) => (
+                        <button
+                          key={state}
+                          type="button"
+                          onClick={() => handleStateSelect(state)}
+                          className={`w-full px-4 py-2 text-left text-sm hover:bg-muted focus:bg-muted focus:outline-none transition-colors ${
+                            selectedState === state ? 'bg-primary/10 text-primary font-medium' : ''
+                          }`}
+                        >
+                          {state}
+                        </button>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
           </form>
 
           <div className="text-sm text-muted-foreground">
@@ -252,9 +504,6 @@ export default function SearchResultsPage() {
                           </div>
                         )}
                       </div>
-
-
-
                     </div>
                     {/* Location */}
                     <div className="flex items-center gap-2 text-muted-foreground">
@@ -312,6 +561,8 @@ export default function SearchResultsPage() {
                   setQuery("");
                   setSpecialists([]);
                   setHasSearched(false);
+                  setSelectedCountry("All Countries");
+                  setSelectedState("All States");
                   router.push('/specialists');
                 }}
               >
@@ -325,5 +576,4 @@ export default function SearchResultsPage() {
       {/* Bottom Design Element */}
       <BottomDesign />
     </main>
-    )
-}
+    )}
