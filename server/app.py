@@ -7,7 +7,6 @@ import time
 from typing import List, Dict, Any
 
 app = Flask(__name__)
-# Keep CORS enabled for common local dev hosts; adjust when deploying or locking down origins.
 CORS(app)
 
 # Global variables for data
