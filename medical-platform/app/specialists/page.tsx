@@ -4,7 +4,8 @@ import type React from 'react'
 
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Search, Hospital, MapPin, Phone, Mail, Loader2, ChevronDown, X } from "lucide-react"
+// Added LayoutGrid for the new button
+import { Search, Hospital, MapPin, Phone, Mail, Loader2, ChevronDown, X, LayoutGrid } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
@@ -20,16 +21,16 @@ const countries = ['Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbu
   'Côte d\x19Ivoire', 'Democratic Republic of the Congo', 'Denmark', 'Dominican Republic', 'Ecuador', 
   'Egypt', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France', 'French Guiana', 
   'French Polynesia', 'Gabon', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Greenland', 'Grenada', 
-  'Guadeloupe', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Haiti', 'Vatican City', 'Honduras', 'Hong Kong', 
+  'Guadeloupe', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Haiti', 'Holy See', 'Honduras', 'Hong Kong', 
   'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Jamaica', 
   'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kosovo', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 
   'Lesotho', 'Liberia', 'Libya', 'Lithuania', 'Madagascar', 'Malawi', 'Malaysia', 'Mali', 'Malta', 'Martinique', 
   'Mexico', 'Mongolia', 'Morocco', 'Mozambique', 'Nepal', 'Netherlands', 'New Caledonia', 'New Zealand', 'Niger', 
   'Nigeria', 'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Panama', 'Papua New Guinea', 'Peru', 'Philippines', 
-  'Poland', 'Portugal', 'Puerto Rico', 'Qatar', 'Reunion', 'Romania', 'Russia', 'Rwanda', 
+  'Poland', 'Portugal', 'Puerto Rico', 'Qatar', 'Republic of the Congo', 'Reunion', 'Romania', 'Russia', 'Rwanda', 
   'Saudi Arabia', 'Senegal', 'Serbia', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'South Africa', 'South Korea', 
   'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tanzania', 'Thailand', 'The Gambia', 
-  'Timor-Leste', 'Togo', 'Trinidad and Tobago', 'Tunisia', 'Turkey (Türkiye)', 'Uganda', 'Ukraine', 'United Arab Emirates', 
+  'Timor-Leste', 'Togo', 'Trinidad and Tobago', 'Tunisia', 'Turkey (Türkiye)', 'USA', 'Uganda', 'Ukraine', 'United Arab Emirates', 
   'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Venezuela', 'Vietnam', 'Zambia', 'Zimbabwe']
 
 // US States data
@@ -455,10 +456,23 @@ export default function SearchResultsPage() {
             )}
           </form>
 
-          <div className="text-sm text-muted-foreground">
-            {loading ? 'Searching...' : hasSearched ? `Showing ${specialists.length} rare disease specialists` : 'Enter a search term to find specialists'}
-            {error && <div className="text-red-500 mt-2">Error: {error}</div>}
+          {/* MODIFIED SECTION: Added Topic Cluster link */}
+          <div className="flex justify-between items-center mt-2">
+            <div className="text-sm text-muted-foreground">
+              {loading ? 'Searching...' : hasSearched ? `Showing ${specialists.length} rare disease specialists` : 'Enter a search term to find specialists'}
+              {error && <div className="text-red-500 mt-2">Error: {error}</div>}
+            </div>
+            <div>
+              <a href="/topic-clusters">
+                <Button variant="ghost" className="text-sm text-primary hover:text-primary/90 font-medium">
+                  <LayoutGrid className="mr-2 h-4 w-4" />
+                  See Topic Clusters
+                </Button>
+              </a>
+            </div>
           </div>
+          {/* END MODIFIED SECTION */}
+
         </div>
       </div>
 
@@ -562,4 +576,5 @@ export default function SearchResultsPage() {
       {/* Bottom Design Element */}
       <BottomDesign />
     </main>
-    )}
+    )
+}
