@@ -105,15 +105,6 @@ export function SearchBar() {
     setSelectedState("All States")
   }
 
-  async function getSpecialists(query: string) {
-    const base = process.env.NEXT_PUBLIC_API_BASE ?? ''
-    const url = base ? `${base}/api/search?q=${encodeURIComponent(query)}` : `/api/search?q=${encodeURIComponent(query)}`
-    const res = await fetch(url)
-    if (!res.ok) throw new Error(await res.text())
-    const data = await res.json()
-    return data
-  }
-
   const buildSearchUrl = (searchQuery: string) => {
     const params = new URLSearchParams()
     params.set('q', searchQuery)
