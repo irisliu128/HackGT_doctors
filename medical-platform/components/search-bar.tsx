@@ -119,77 +119,18 @@ export function SearchBar() {
     return `/specialists?${params.toString()}`
   }
 
-  const buildApiUrl = (searchQuery: string) => {
-    const params = new URLSearchParams()
-    params.set('q', searchQuery)
-    
-    if (selectedCountry !== "All Countries") {
-      params.set('country', selectedCountry)
-    }
-    
-    if (selectedCountry === "United States" && selectedState !== "All States") {
-      params.set('state', selectedState)
-    }
-    
-    return `http://localhost:8000/api/specialists/search?${params.toString()}`
-  }
-
-  const handleSearch = async (e: React.FormEvent) => {
+  const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!query.trim()) return
-    
-    setLoading(true)
-    setError(null)
-    
-    try {
-      const response = await fetch(buildApiUrl(query))
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        router.push(buildSearchUrl(query))
-      } else {
-        throw new Error(data.error || 'Search failed')
-      }
-    } catch (err: any) {
-      console.error('Search error:', err)
-      setError(err?.message ?? 'An error occurred while searching')
-      router.push(buildSearchUrl(query))
-    } finally {
-      setLoading(false)
-    }
+    const trimmed = query.trim()
+    if (!trimmed) return
+    // Only navigate; API call is handled by app/specialists/page.tsx
+    router.push(buildSearchUrl(trimmed))
   }
 
-  const handleQuickSearch = async (searchTerm: string) => {
+  const handleQuickSearch = (searchTerm: string) => {
     setQuery(searchTerm)
-    setLoading(true)
-    setError(null)
-    
-    try {
-      const response = await fetch(buildApiUrl(searchTerm))
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      
-      const data = await response.json()
-      
-      if (data.success) {
-        router.push(buildSearchUrl(searchTerm))
-      } else {
-        throw new Error(data.error || 'Search failed')
-      }
-    } catch (err: any) {
-      console.error('Quick search error:', err)
-      setError(err?.message ?? 'An error occurred while searching')
-      router.push(buildSearchUrl(searchTerm))
-    } finally {
-      setLoading(false)
-    }
+    // Only navigate; API call is handled by app/specialists/page.tsx
+    router.push(buildSearchUrl(searchTerm))
   }
 
   return (
