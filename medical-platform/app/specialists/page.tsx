@@ -12,26 +12,25 @@ import { Badge } from "@/components/ui/badge"
 import { BottomDesign } from "@/components/bottom-design"
 
 // Country data
-const countries = [
-  "All Countries",
-  "United States",
-  "Canada", 
-  "United Kingdom",
-  "Germany",
-  "France",
-  "Australia",
-  "Japan",
-  "Brazil",
-  "Mexico",
-  "India",
-  "China",
-  "South Korea",
-  "Italy",
-  "Spain",
-  "Netherlands",
-  "Sweden",
-  "Switzerland"
-]
+const countries = ['Albania', 'Algeria', 'Andorra', 'Angola', 'Antigua and Barbuda', 'Argentina', 
+  'Armenia', 'Aruba', 'Australia', 'Austria', 'Azerbaijan', 'Bahrain', 'Bangladesh', 'Barbados', 
+  'Belarus', 'Belgium', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil', 'Bulgaria', 
+  'Burkina Faso', 'Burma', 'Burundi', 'Cambodia', 'Cameroon', 'Canada', 'Central African Republic', 
+  'Chile', 'China', 'Colombia', 'Comoros', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czechia', 
+  'Côte d\x19Ivoire', 'Democratic Republic of the Congo', 'Denmark', 'Dominican Republic', 'Ecuador', 
+  'Egypt', 'Estonia', 'Eswatini', 'Ethiopia', 'Fiji', 'Finland', 'France', 'French Guiana', 
+  'French Polynesia', 'Gabon', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Greenland', 'Grenada', 
+  'Guadeloupe', 'Guatemala', 'Guinea', 'Guinea-Bissau', 'Haiti', 'Holy See', 'Honduras', 'Hong Kong', 
+  'Hungary', 'Iceland', 'India', 'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Jamaica', 
+  'Japan', 'Jordan', 'Kazakhstan', 'Kenya', 'Kosovo', 'Kuwait', 'Kyrgyzstan', 'Laos', 'Latvia', 'Lebanon', 
+  'Lesotho', 'Liberia', 'Libya', 'Lithuania', 'Madagascar', 'Malawi', 'Malaysia', 'Mali', 'Malta', 'Martinique', 
+  'Mexico', 'Mongolia', 'Morocco', 'Mozambique', 'Nepal', 'Netherlands', 'New Caledonia', 'New Zealand', 'Niger', 
+  'Nigeria', 'North Macedonia', 'Norway', 'Oman', 'Pakistan', 'Panama', 'Papua New Guinea', 'Peru', 'Philippines', 
+  'Poland', 'Portugal', 'Puerto Rico', 'Qatar', 'Republic of the Congo', 'Reunion', 'Romania', 'Russia', 'Rwanda', 
+  'Saudi Arabia', 'Senegal', 'Serbia', 'Sierra Leone', 'Singapore', 'Slovakia', 'Slovenia', 'South Africa', 'South Korea', 
+  'South Sudan', 'Spain', 'Sri Lanka', 'Sudan', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tanzania', 'Thailand', 'The Gambia', 
+  'Timor-Leste', 'Togo', 'Trinidad and Tobago', 'Tunisia', 'Turkey (Türkiye)', 'USA', 'Uganda', 'Ukraine', 'United Arab Emirates', 
+  'United Kingdom', 'United States', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Venezuela', 'Vietnam', 'Zambia', 'Zimbabwe']
 
 // US States data
 const usStates = [
@@ -83,11 +82,11 @@ const fallbackSpecialists: Specialist[] = [
     name: "Anne-Catherine Bachoud-Levi",
     first_name: "Anne-Catherine",
     last_name: "Bachoud-Levi",
-    hospital: "Assistance Publique - HÃ´pitaux de Paris",
+    hospital: "Assistance Publique - Hôpitaux de Paris",
     specialty: "Huntington's Disease",
     research_interests: "Neurodegenerative diseases, clinical trials",
     location: {
-      city: "CrÃ©teil",
+      city: "Créteil",
       state: "",
       country: "France"
     },
@@ -132,8 +131,8 @@ const fallbackSpecialists: Specialist[] = [
   },
   {
     id: "3",
-    name: "AndrÃ© M Cantin",
-    first_name: "AndrÃ©",
+    name: "André M Cantin",
+    first_name: "André",
     last_name: "Cantin",
     hospital: "Centre de recherche du Centre hospitalier universitaire de Sherbrooke",
     specialty: "Cystic Fibrosis",
@@ -164,6 +163,9 @@ export default function SearchResultsPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [hasSearched, setHasSearched] = useState(false);
+
+    const router = useRouter();
+    const searchParams = useSearchParams();
     
     // Location filter states
     const [selectedCountry, setSelectedCountry] = useState("All Countries")
@@ -171,9 +173,7 @@ export default function SearchResultsPage() {
     const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false)
     const [locationSearchTerm, setLocationSearchTerm] = useState("")
     const [activeLocationTab, setActiveLocationTab] = useState<'country' | 'state'>('country')
-    
-    const router = useRouter();
-    const searchParams = useSearchParams();
+
 
     // Filter countries based on search term
     const filteredCountries = countries.filter(country =>
@@ -257,25 +257,11 @@ export default function SearchResultsPage() {
       return `/specialists?${params.toString()}`
     }
 
-    // Get initial query and location from URL
+    // Get initial query from URL
     useEffect(() => {
       const urlQuery = searchParams.get('q');
-      const urlCountry = searchParams.get('country');
-      const urlState = searchParams.get('state');
-      
       if (urlQuery) {
         setQuery(urlQuery);
-      }
-      
-      if (urlCountry) {
-        setSelectedCountry(urlCountry);
-      }
-      
-      if (urlState) {
-        setSelectedState(urlState);
-      }
-      
-      if (urlQuery) {
         performSearch(urlQuery);
       }
     }, [searchParams]);
@@ -288,7 +274,7 @@ export default function SearchResultsPage() {
       setHasSearched(true);
       
       try {
-        const response = await fetch(buildApiUrl(searchQuery));
+        const response = await fetch(`http://localhost:8000/api/specialists/search?q=${encodeURIComponent(searchQuery)}`);
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -315,8 +301,8 @@ export default function SearchResultsPage() {
       e.preventDefault();
       const trimmedQuery = query.trim();
       if (trimmedQuery) {
-        // Update URL with location filters
-        router.push(buildSearchUrl(trimmedQuery));
+        // Update URL
+        router.push(`/specialists?q=${encodeURIComponent(trimmedQuery)}`);
         performSearch(trimmedQuery);
       }
     };
