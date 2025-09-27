@@ -228,6 +228,7 @@ export default function SearchResultsPage() {
       // Don't auto-search - let user click search button
     }
 
+    // API URL creation
     const buildApiUrl = (searchQuery: string) => {
       const params = new URLSearchParams()
       params.set('q', searchQuery)
@@ -243,6 +244,7 @@ export default function SearchResultsPage() {
       return `http://localhost:8000/api/specialists/search?${params.toString()}`
     }
 
+    // Search URL creation
     const buildSearchUrl = (searchQuery: string) => {
       const params = new URLSearchParams()
       params.set('q', searchQuery)
